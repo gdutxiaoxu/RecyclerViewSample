@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.xj.recyclerviewdemo.grid.GridSampleActivity;
+import com.xj.recyclerviewdemo.grid.GridSampleActivity2;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -23,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.btn_2:
                 startActivity(new Intent(this, LinearSampleActivity.class));
+                break;
+            case R.id.btn_3:
+                startActivity(new Intent(this, GridSampleActivity2.class));
                 break;
             default:
                 break;

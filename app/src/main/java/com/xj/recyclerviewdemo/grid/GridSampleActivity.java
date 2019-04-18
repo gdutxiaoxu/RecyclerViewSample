@@ -1,4 +1,4 @@
-package com.xj.recyclerviewdemo;
+package com.xj.recyclerviewdemo.grid;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -6,6 +6,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.xj.library.utils.DisplayUtils;
+import com.xj.recyclerviewdemo.DataUtils;
+import com.xj.recyclerviewdemo.GridDividerItemDecoration;
+import com.xj.recyclerviewdemo.R;
 
 import java.util.List;
 
@@ -33,7 +36,7 @@ public class GridSampleActivity extends AppCompatActivity {
         int firstAndLastColumnW = DisplayUtils.dp2px(this, 15);
         int firstRowTopMargin = DisplayUtils.dp2px(this, 15);
         GridDividerItemDecoration gridDividerItemDecoration =
-                new GridDividerItemDecoration(this, firstAndLastColumnW, firstRowTopMargin, true, true);
+                new GridDividerItemDecoration(this, firstAndLastColumnW, firstRowTopMargin, firstRowTopMargin);
         gridDividerItemDecoration.setFirstRowTopMargin(firstRowTopMargin);
         gridDividerItemDecoration.setLastRowBottomMargin(firstRowTopMargin);
         mRecyclerView.addItemDecoration(gridDividerItemDecoration);

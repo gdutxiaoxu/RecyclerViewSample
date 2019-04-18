@@ -1,9 +1,7 @@
 package com.xj.recyclerviewdemo;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.support.annotation.ColorInt;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -22,7 +20,6 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
 
     private Context mContext;
 
-    private boolean mIsFirstAndLastColumnNeedSpace = false;//第一列和最后一列是否需要指定间隔(默认不指定)
     private int mFirstAndLastColumnW;          //您所需指定的间隔宽度，主要为第一列和最后一列与父控件的间隔；行间距，列间距将动态分配
     private int mFirstRowTopMargin = 0; //第一行顶部是否需要间隔
 
@@ -30,46 +27,20 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
 
     private int mSpanCount = 0;
     private int mScreenW = 0;
+    private int mItemDistance;
+
 
     /**
-     * @param firstAndLastColumnW           间隔宽度
-     * @param isFirstAndLastColumnNeedSpace 第一列和最后一列是否需要间隔
+     * @param firstAndLastColumnW 间隔宽度
+     * @param firstRowTopMargin   第一行顶部是否需要间隔
      */
-    public GridDividerItemDecoration(Context context, int firstAndLastColumnW, boolean isFirstAndLastColumnNeedSpace) {
-        this(context, firstAndLastColumnW, 0, isFirstAndLastColumnNeedSpace, false);
-    }
-
-    /**
-     * @param firstAndLastColumnW           间隔宽度
-     * @param isFirstAndLastColumnNeedSpace 第一列和最后一列是否需要间隔
-     * @param firstRowTopMargin             第一行顶部是否需要间隔(根据间隔大小判断)
-     */
-    public GridDividerItemDecoration(Context context, int firstAndLastColumnW, int firstRowTopMargin, boolean isFirstAndLastColumnNeedSpace) {
-        this(context, firstAndLastColumnW, firstRowTopMargin, isFirstAndLastColumnNeedSpace, false);
-    }
-
-    /**
-     * @param firstAndLastColumnW           间隔宽度
-     * @param firstRowTopMargin             第一行顶部是否需要间隔
-     * @param isFirstAndLastColumnNeedSpace 第一列和最后一列是否需要间隔
-     * @param isLastRowNeedSpace            最后一行是否需要间隔
-     */
-    public GridDividerItemDecoration(Context context, int firstAndLastColumnW, int firstRowTopMargin, boolean isFirstAndLastColumnNeedSpace, boolean isLastRowNeedSpace) {
-        this(context, firstAndLastColumnW, firstRowTopMargin, isFirstAndLastColumnNeedSpace, isLastRowNeedSpace, Color.WHITE);
-    }
-
-    /**
-     * @param firstAndLastColumnW           间隔宽度
-     * @param firstRowTopMargin             第一行顶部是否需要间隔
-     * @param isFirstAndLastColumnNeedSpace 第一列和最后一列是否需要间隔
-     * @param isLastRowNeedSpace            最后一行是否需要间隔
-     */
-    public GridDividerItemDecoration(Context context, int firstAndLastColumnW, int firstRowTopMargin, boolean isFirstAndLastColumnNeedSpace, boolean isLastRowNeedSpace, @ColorInt int color) {
+    public GridDividerItemDecoration(Context context, int firstAndLastColumnW, int firstRowTopMargin, int lastRowBottomMargin) {
+        mContext = context;
         mFirstAndLastColumnW = firstAndLastColumnW;
-        this.mIsFirstAndLastColumnNeedSpace = isFirstAndLastColumnNeedSpace;
-        this.mContext = context;
-        this.mFirstRowTopMargin = firstRowTopMargin;
+        mFirstRowTopMargin = firstRowTopMargin;
+        mLastRowBottomMargin = lastRowBottomMargin;
     }
+
 
     public void setFirstRowTopMargin(int firstRowTopMargin) {
         mFirstRowTopMargin = firstRowTopMargin;
@@ -77,6 +48,10 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
 
     public void setLastRowBottomMargin(int lastRowBottomMargin) {
         mLastRowBottomMargin = lastRowBottomMargin;
+    }
+
+    public void setItemDistance(int itemDistance) {
+        mItemDistance = itemDistance;
     }
 
     @Override
@@ -91,26 +66,25 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
         int itemPosition = ((RecyclerView.LayoutParams) view.getLayoutParams()).getViewLayoutPosition();
         mSpanCount = getSpanCount(parent);
         int childCount = parent.getAdapter().getItemCount();
-        int maxAllDividerWidth = getMaxDividerWidth(view); //
 
-        int spaceWidth = 0;//首尾两列与父布局之间的间隔
-        if (mIsFirstAndLastColumnNeedSpace) {
-            spaceWidth = mFirstAndLastColumnW;
-        }
+        // 屏幕宽度-View的宽度*spanCount 得到屏幕剩余空间
+        int maxDividerWidth = getMaxDividerWidth(view);
+        int spaceWidth = mFirstAndLastColumnW;//首尾两列与父布局之间的间隔
+        // 除去首尾两列，item与item之间的距离
+        int dividerItemWidth = (maxDividerWidth - 2 * spaceWidth) / (mSpanCount - 1);
+        int eachItemWidth = maxDividerWidth / mSpanCount;//每个Item可以分配的距离
 
-        int eachItemWidth = maxAllDividerWidth / mSpanCount;//每个Item left+right
-        int dividerItemWidth = (maxAllDividerWidth - 2 * spaceWidth) / (mSpanCount - 1);//item与item之间的距离
-
-        left = (int) (1.0f * itemPosition % mSpanCount * (dividerItemWidth - eachItemWidth) + spaceWidth);
+        left = (int) ((dividerItemWidth - eachItemWidth) * 1.0f * itemPosition % mSpanCount + spaceWidth);
         right = eachItemWidth - left;
         bottom = dividerItemWidth;
 
         // 首行
-        if (mFirstRowTopMargin > 0 && isFirstRow(parent, itemPosition, mSpanCount, childCount)) {//第一行顶部是否需要间隔
+        if (mFirstRowTopMargin > 0 && isFirstRow(parent, itemPosition, mSpanCount, childCount)) {
             top = mFirstRowTopMargin;
         }
 
-        if (isLastRow(parent, itemPosition, mSpanCount, childCount)) {//最后一行是否需要间隔
+        //最后一行
+        if (isLastRow(parent, itemPosition, mSpanCount, childCount)) {
             if (mLastRowBottomMargin < 0) {
                 bottom = 0;
             } else {
@@ -139,7 +113,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
 
         int maxDividerWidth = screenWidth - itemWidth * mSpanCount;
 
-        if (itemHeight < 0 || itemWidth < 0 || (mIsFirstAndLastColumnNeedSpace && maxDividerWidth <= (mSpanCount - 1) * mFirstAndLastColumnW)) {
+        if (itemHeight < 0 || itemWidth < 0 || maxDividerWidth <= (mSpanCount - 1) * mFirstAndLastColumnW) {
             view.getLayoutParams().width = getAttachCloumnWidth();
             view.getLayoutParams().height = getAttachCloumnWidth();
             maxDividerWidth = screenWidth - view.getLayoutParams().width * mSpanCount;
@@ -168,10 +142,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
         int spaceWidth = 0;
         try {
             int width = getScreenWidth();
-            if (mIsFirstAndLastColumnNeedSpace) {
-                spaceWidth = 2 * mFirstAndLastColumnW;
-            }
-
+            spaceWidth = 2 * mFirstAndLastColumnW;
             itemWidth = (width - spaceWidth) / mSpanCount - 40;
         } catch (Exception e) {
             e.printStackTrace();
@@ -252,8 +223,6 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
         if (layoutManager instanceof GridLayoutManager) {
             int lines = childCount % spanCount == 0 ? childCount / spanCount : childCount / spanCount + 1;
             return lines == pos / spanCount + 1;
-        } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-
         }
         return false;
     }
@@ -275,8 +244,6 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
             } else {
                 return false;
             }
-        } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-
         }
         return false;
     }

@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.xj.library.utils.DisplayUtils;
+import com.xj.recyclerviewdemo.grid.ImageAdapter;
 
 import java.util.List;
 
