@@ -71,10 +71,11 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
         int maxDividerWidth = getMaxDividerWidth(view);
         int spaceWidth = mFirstAndLastColumnW;//首尾两列与父布局之间的间隔
         // 除去首尾两列，item与item之间的距离
-        int dividerItemWidth = (maxDividerWidth - 2 * spaceWidth) / (mSpanCount - 1);
-        int eachItemWidth = maxDividerWidth / mSpanCount;//每个Item可以分配的距离
+        int eachItemWidth = maxDividerWidth / mSpanCount;
+        int dividerItemWidth = (maxDividerWidth - 2 * spaceWidth) / (mSpanCount - 1);//item与item之间的距离
 
-        left = (int) ((dividerItemWidth - eachItemWidth) * 1.0f * itemPosition % mSpanCount + spaceWidth);
+        left = itemPosition % mSpanCount * (dividerItemWidth - eachItemWidth) + spaceWidth;
+
         right = eachItemWidth - left;
         bottom = dividerItemWidth;
 
@@ -92,6 +93,8 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
             }
         }
 
+        Log.i(TAG, "getItemOffsets: dividerItemWidth =" + dividerItemWidth + "eachItemWidth = " + eachItemWidth);
+
         Log.i(TAG, "getItemOffsets: itemPosition =" + itemPosition + " left = " + left + " top = " + top
                 + " right = " + right + " bottom = " + bottom);
 
@@ -100,7 +103,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
 
     /**
      * 获取Item View的大小，若无则自动分配空间
-     * 并根据 屏幕宽度-View的宽度*spanCount 得到屏幕剩余空间
+     * 并根据 屏ge幕宽度-View的宽度*spanCount 得到屏幕剩余空间
      *
      * @param view
      * @return
@@ -108,6 +111,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
     private int getMaxDividerWidth(View view) {
         int itemWidth = view.getLayoutParams().width;
         int itemHeight = view.getLayoutParams().height;
+        Log.i(TAG, "getMaxDividerWidth: itemWidth =" + itemWidth);
 
         int screenWidth = getScreenWidth();
 
@@ -123,6 +127,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     private int getScreenWidth() {
+        Log.i(TAG, "getScreenWidth: mScreenW =" + mScreenW);
         if (mScreenW > 0) {
             return mScreenW;
         }
@@ -157,10 +162,9 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
      * @param parent
      * @param pos
      * @param spanCount
-     * @param childCount
      * @return
      */
-    private boolean isFirstColumn(RecyclerView parent, int pos, int spanCount, int childCount) {
+    private boolean isFirstColumn(RecyclerView parent, int pos, int spanCount) {
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if (layoutManager instanceof GridLayoutManager) {
             if (pos % spanCount == 0) {
@@ -189,7 +193,7 @@ public class GridDividerItemDecoration extends RecyclerView.ItemDecoration {
      * @param childCount
      * @return
      */
-    private boolean isLastColumn(RecyclerView parent, int pos, int spanCount, int childCount) {
+    private boolean isLastColumn(RecyclerView parent, int pos, int spanCount) {
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if (layoutManager instanceof GridLayoutManager) {
             if ((pos + 1) % spanCount == 0) {// 如果是最后一列，则不需要绘制右边
